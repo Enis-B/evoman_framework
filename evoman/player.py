@@ -9,10 +9,10 @@ import numpy
 import struct
 import binascii
 
-import Base
-from Base.SpriteConstants import *
-from Base.SpriteDefinition import *
-from sensors import *
+import evoman.Base
+from evoman.Base.SpriteConstants import *
+from evoman.Base.SpriteDefinition import *
+from evoman.sensors import *
 
 
 # player proctile

@@ -13,8 +13,9 @@ from pygame.locals import *
 import struct
 import tmx
 
-from player import *
-from controller import Controller
+from evoman.sensors import Sensors
+from evoman.player import *
+from evoman.controller import Controller
 
 
 # main class
