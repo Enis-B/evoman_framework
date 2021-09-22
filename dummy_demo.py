@@ -4,19 +4,19 @@
 # karine.smiras@gmail.com      #
 ################################
 from __future__ import print_function
-import os
+# import os
 import neat
 import visualize
 import random
-from deap import base
-from deap import creator
-from deap import tools
+# from deap import base
+# from deap import creator
+# from deap import tools
 import numpy as np
 # imports framework
 import sys, os
 sys.path.insert(0, 'evoman')
 from evoman.environment import Environment
-from demo_controller import player_controller
+from neat_controller import player_controller
 
 experiment_name = 'dummy_demo'
 if not os.path.exists(experiment_name):
@@ -25,7 +25,7 @@ if not os.path.exists(experiment_name):
 n_hidden_neurons = 10
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[2],
+                  enemies=[1],
                   playermode="ai",
                   player_controller = player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -73,7 +73,7 @@ def eval(genomes, config):
     for genome_id, genome in genomes:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         #evaluate(genomes)
-        print(net)
+        # print(genome_id, " genome:\n", str(genome)[:500], '\n\n\n')
         genome.fitness = simulation(env,net)
 
 
