@@ -177,8 +177,9 @@ def run(config_file):
     p.add_reporter(stats)
     #p.add_reporter(neat.Checkpointer(5))
 
-    # Run for up to 300 generations.
-    winner = p.run(eval, 20)
+    # Run for up to x generations.
+    gens = 300
+    winner = p.run(eval, gens)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
@@ -191,14 +192,15 @@ def run(config_file):
         output = winner_net.activate(xi)
         print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
     node_names = {-1:'A', -2: 'B', 0:'A XOR B'}
-    
-    visualize.draw_net(config, winner, True, node_names=node_names)
+    '''
+
+    visualize.draw_net(config, winner, True)
     visualize.plot_stats(stats, ylog=False, view=True)
     visualize.plot_species(stats, view=True)
 
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
-    p.run(eval_genomes, 10)
-    '''
+    #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-19')
+    #p.run(eval, 10)
+
 
 
 
