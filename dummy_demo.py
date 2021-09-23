@@ -77,6 +77,16 @@ def eval(genomes, config):
         genome.fitness = simulation(env,net)
 
 
+def eval_p(genome, config):
+    # This function will run in parallel:
+    # only evaluates a single genome and returns the fitness
+    net = neat.nn.FeedForwardNetwork.create(genome, config)
+    #evaluate(genomes)
+    # print(genome_id, " genome:\n", str(genome)[:500], '\n\n\n')
+
+    # genome.fitness = simulation(env,net)
+    return simulation(env,net)
+
 '''
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -168,7 +178,7 @@ def run(config_file):
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
-# Create the population, which is the top-level object for a NEAT run.
+    # Create the population, which is the top-level object for a NEAT run.
     p = neat.Population(config)
     # initializes simulation in individual evolution mode, for single static enemy.
     # Add a stdout reporter to show progress in the terminal.
@@ -177,9 +187,10 @@ def run(config_file):
     p.add_reporter(stats)
     #p.add_reporter(neat.Checkpointer(5))
 
-    # Run for up to x generations.
-    gens = 300
-    winner = p.run(eval, gens)
+    # Run for up to 300 generations.
+    # winner = p.run(eval, 20)
+    pe = neat.ParallelEvaluator(4, eval_p)
+    winner = p.run(pe.evaluate, 10)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
@@ -192,15 +203,14 @@ def run(config_file):
         output = winner_net.activate(xi)
         print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
     node_names = {-1:'A', -2: 'B', 0:'A XOR B'}
-    '''
-
-    visualize.draw_net(config, winner, True)
+    
+    visualize.draw_net(config, winner, True, node_names=node_names)
     visualize.plot_stats(stats, ylog=False, view=True)
     visualize.plot_species(stats, view=True)
 
-    #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-19')
-    #p.run(eval, 10)
-
+    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
+    p.run(eval_genomes, 10)
+    '''
 
 
 
