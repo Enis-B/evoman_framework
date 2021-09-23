@@ -5,7 +5,7 @@ config = configparser.ConfigParser()
 
 config['NEAT'] = {'fitness_criterion': 'max',
                   'fitness_threshold': 1000,
-                  'pop_size': 10,
+                  'pop_size': 20,
                   'reset_on_extinction': False}
 
 config['DefaultGenome'] = {
@@ -24,22 +24,30 @@ config['DefaultGenome'] = {
                 # ---
                   
                 'aggregation_default': 'sum',
-                'aggregation_mutate_rate ': 0.0,
+                'aggregation_mutate_rate ': 0.5,
                 'aggregation_options': 'sum',
                   
                 'feed_forward': True,
-                'initial_connection': 'full',
+                'initial_connection': 'full_nodirect',
 
                 'num_hidden': 10,
                 'num_inputs': 20,
                 'num_outputs': 5,
 
+
                 'compatibility_disjoint_coefficient' : 1.0,
                 'compatibility_weight_coefficient': 0.5,
-                'conn_add_prob': 0.5,
-                'conn_delete_prob':0.5,
+                'conn_add_prob': 0.0,
+                'conn_delete_prob':0.0,
                 'enabled_default'  : True,
-                'enabled_mutate_rate' : 0.01,
+                'enabled_mutate_rate' : 0.00,
+
+                # 'compatibility_disjoint_coefficient' : 1.0,
+                # 'compatibility_weight_coefficient': 0.5,
+                # 'conn_add_prob': 0.5,
+                # 'conn_delete_prob':0.0,
+                # 'enabled_default'  : True,
+                # 'enabled_mutate_rate' : 0.01,
 
                 # think these have to be 0 to keep net architecture?
                 # 'node_add_prob' : 0.2,
@@ -77,7 +85,7 @@ config['DefaultStagnation'] = { 'species_fitness_func' : 'max',
                                 'max_stagnation'       : 15,
                                 'species_elitism'      :  2}
 
-config['DefaultReproduction'] = { 'elitism' : 2 , 'survival_threshold' : 0.2}
+config['DefaultReproduction'] = { 'elitism' : 2 , 'survival_threshold' : 0.7}
 
 with open('config_file', 'w') as configfile:
         config.write(configfile)

@@ -77,6 +77,16 @@ def eval(genomes, config):
         genome.fitness = simulation(env,net)
 
 
+def eval_p(genome, config):
+    # This function will run in parallel:
+    # only evaluates a single genome and returns the fitness
+    net = neat.nn.FeedForwardNetwork.create(genome, config)
+    #evaluate(genomes)
+    # print(genome_id, " genome:\n", str(genome)[:500], '\n\n\n')
+
+    # genome.fitness = simulation(env,net)
+    return simulation(env,net)
+
 '''
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -168,7 +178,7 @@ def run(config_file):
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
-# Create the population, which is the top-level object for a NEAT run.
+    # Create the population, which is the top-level object for a NEAT run.
     p = neat.Population(config)
     # initializes simulation in individual evolution mode, for single static enemy.
     # Add a stdout reporter to show progress in the terminal.
@@ -178,7 +188,9 @@ def run(config_file):
     #p.add_reporter(neat.Checkpointer(5))
 
     # Run for up to 300 generations.
-    winner = p.run(eval, 20)
+    # winner = p.run(eval, 20)
+    pe = neat.ParallelEvaluator(4, eval_p)
+    winner = p.run(pe.evaluate, 10)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
