@@ -12,11 +12,18 @@ import random
 # from deap import creator
 # from deap import tools
 import numpy as np
+import matplotlib.pyplot as plt
+import pickle
+
 # imports framework
 import sys, os
 sys.path.insert(0, 'evoman')
 from evoman.environment import Environment
 from neat_controller import player_controller
+
+headless = True
+if headless:
+    os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 experiment_name = 'dummy_demo'
 if not os.path.exists(experiment_name):
@@ -25,9 +32,10 @@ if not os.path.exists(experiment_name):
 n_hidden_neurons = 10
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[1],
+                  enemies=[3],
                   playermode="ai",
                   player_controller = player_controller(n_hidden_neurons),
+                  randomini='yes',
                   enemymode="static",
                   level=2,
                   speed="fastest")
@@ -54,6 +62,11 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 def simulation(env,x):
     f,p,e,t = env.play(pcont=x)
     return f
+
+# runs simulation for gain
+def simulation_for_gain(env,x):
+    f,p,e,t = env.play(pcont=x)
+    return p,e
 
 # evaluation
 def evaluate(x):
@@ -83,9 +96,17 @@ def eval_p(genome, config):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     #evaluate(genomes)
     # print(genome_id, " genome:\n", str(genome)[:500], '\n\n\n')
-
     # genome.fitness = simulation(env,net)
     return simulation(env,net)
+
+def eval_winner(winner, config):
+    # This function will run in parallel:
+    # only evaluates a single genome and returns the fitness
+    net = neat.nn.FeedForwardNetwork.create(winner, config)
+    #evaluate(genomes)
+    # print(genome_id, " genome:\n", str(genome)[:500], '\n\n\n')
+    # genome.fitness = simulation(env,net)
+    return simulation_for_gain(env,net)
 
 '''
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -173,45 +194,124 @@ def main():
 
 
 def run(config_file):
-    # Load configuration.
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         config_file)
+    run_mode = "test"
+    if run_mode == "train":
 
-    # Create the population, which is the top-level object for a NEAT run.
-    p = neat.Population(config)
-    # initializes simulation in individual evolution mode, for single static enemy.
-    # Add a stdout reporter to show progress in the terminal.
-    p.add_reporter(neat.StdOutReporter(True))
-    stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
-    #p.add_reporter(neat.Checkpointer(5))
+        # Load configuration.
+        config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                             neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                             config_file)
 
-    # Run for up to 300 generations.
-    # winner = p.run(eval, 20)
-    pe = neat.ParallelEvaluator(4, eval_p)
-    winner = p.run(pe.evaluate, 10)
+        # Create the population, which is the top-level object for a NEAT run.
+        p = neat.Population(config)
+        # initializes simulation in individual evolution mode, for single static enemy.
+        # Add a stdout reporter to show progress in the terminal.
+        p.add_reporter(neat.StdOutReporter(True))
+        stats = neat.StatisticsReporter()
+        p.add_reporter(stats)
+        #p.add_reporter(neat.Checkpointer(5))
+        # Run for up to x generations.
+        # winner = p.run(eval, 20)
+        pe = neat.ParallelEvaluator(4, eval_p)
+        winner = p.run(pe.evaluate, 20)
 
-    # Display the winning genome.
-    print('\nBest genome:\n{!s}'.format(winner))
+        # Display the winning genome.
+        print('\nBest genome:\n{!s}'.format(winner))
 
-    '''
-    # Show output of the most fit genome against training data.
-    print('\nOutput:')
-    winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
-    for xi, xo in zip(xor_inputs,xor_outputs):
-        output = winner_net.activate(xi)
-        print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
-    node_names = {-1:'A', -2: 'B', 0:'A XOR B'}
-    
-    visualize.draw_net(config, winner, True, node_names=node_names)
-    visualize.plot_stats(stats, ylog=False, view=True)
-    visualize.plot_species(stats, view=True)
+        '''
+        # Show output of the most fit genome against training data.
+        print('\nOutput:')
+        winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
+        for xi, xo in zip(xor_inputs,xor_outputs):
+            output = winner_net.activate(xi)
+            print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
+        node_names = {-1:'A', -2: 'B', 0:'A XOR B'}
+        '''
 
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
-    p.run(eval_genomes, 10)
-    '''
+        visualize.draw_net(config, winner, True)
+        visualize.plot_stats(stats, ylog=False, view=True)
+        visualize.plot_species(stats, view=True)
 
+    elif run_mode == "test":
+        mean_gain_list = []
+        for i in range(10):
+            # Load configuration.
+            config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                                 neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                                 config_file)
+
+            # Create the population, which is the top-level object for a NEAT run.
+            p = neat.Population(config)
+            # initializes simulation in individual evolution mode, for single static enemy.
+            # Add a stdout reporter to show progress in the terminal.
+            p.add_reporter(neat.StdOutReporter(True))
+            stats = neat.StatisticsReporter()
+            p.add_reporter(stats)
+            #p.add_reporter(neat.Checkpointer(5))
+            # Run for up to x generations.
+            # winner = p.run(eval, 20)
+            pe = neat.ParallelEvaluator(4, eval_p)
+            winner = p.run(pe.evaluate, 50)
+            # Display the winning genome.
+            print('\nWinner genome:\n{!s}'.format(winner))
+            real_winner = stats.best_genome()
+            # Display the winning genome.
+            print('\nBest genome:\n{!s}'.format(real_winner))
+            winner_gain = 0
+            for cnt in range(5):
+                p,e = eval_winner(real_winner,config)
+                winner_gain = winner_gain + (p - e)
+            mean_gain = winner_gain/5
+            mean_gain_list.append(mean_gain)
+
+            # add mean_gains to file for later stat. test
+            with open('mean_gains_ea1_enemy3', 'wb') as fp:
+                pickle.dump(mean_gain_list, fp)
+            #with open ('mean_gains_ea1_enemy1', 'rb') as fp:
+            #    itemlist = pickle.load(fp)
+
+            '''
+            # Show output of the most fit genome against training data.
+            print('\nOutput:')
+            winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
+            for xi, xo in zip(xor_inputs,xor_outputs):
+                output = winner_net.activate(xi)
+                print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
+            node_names = {-1:'A', -2: 'B', 0:'A XOR B'}
+            '''
+
+            best_fitness = [c.fitness for c in stats.most_fit_genomes]
+            avg_fitness = np.array(stats.get_fitness_mean())
+            stdev_fitness = np.array(stats.get_fitness_stdev())
+
+
+            if i > 0:
+                avg_best = [ele1 + ele2 for ele1,ele2 in zip(avg_best,best_fitness)]
+                avg_avg_fitness = [ele1 + ele2 for ele1,ele2 in zip(avg_avg_fitness,avg_fitness)]
+                avg_stdev_fitness = [ele1 + ele2 for ele1,ele2 in zip(avg_stdev_fitness,stdev_fitness)]
+            else:
+                avg_best = best_fitness
+                avg_avg_fitness = avg_fitness.tolist()
+                avg_stdev_fitness = stdev_fitness.tolist()
+
+
+        avg_best = [number / 10 for number in avg_best]
+        avg_avg_fitness = [number / 10 for number in avg_avg_fitness]
+        avg_stdev_fitness = [number / 10 for number in avg_stdev_fitness]
+
+
+        visualize.plot_stats_avg(avg_best,avg_avg_fitness,avg_stdev_fitness,50, ylog=False, view=True)
+        fig = plt.figure(figsize =(10, 7))
+        plt.title("Boxplot of mean gains")
+        plt.xlabel('EA')
+        plt.ylabel('mean of gains across 5 runs for each experiment')
+        plt.boxplot(np.array(mean_gain_list))
+        plt.savefig('boxplot_gain.png', bbox_inches='tight')
+        plt.show()
+
+
+    #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
+    #p.run(eval, 10)
 
 
 if __name__ == '__main__':

@@ -40,6 +40,31 @@ def plot_stats(statistics, ylog=False, view=False, filename='avg_fitness.svg'):
 
     plt.close()
 
+def plot_stats_avg(avg_best,avg_avg_fitness,avg_stdev,gens, ylog=False, view=False, filename='avg_avg_fitness.svg'):
+    """ Plots the population's average and best fitness. """
+    if plt is None:
+        warnings.warn("This display is not available due to a missing optional dependency (matplotlib)")
+        return
+
+    plt.plot(np.array(range(gens)), np.array(avg_avg_fitness), 'b-', label="average")
+    plt.plot(np.array(range(gens)), np.array(avg_avg_fitness) - np.array(avg_stdev), 'g-.', label="-1 sd")
+    plt.plot(np.array(range(gens)), np.array(avg_avg_fitness) + np.array(avg_stdev), 'g-.', label="+1 sd")
+    plt.plot(np.array(range(gens)), np.array(avg_best), 'r-', label="best")
+
+    plt.title("Mean of population's average and best fitness across experiments")
+    plt.xlabel("Generations")
+    plt.ylabel("Fitness")
+    plt.grid()
+    plt.legend(loc="best")
+    if ylog:
+        plt.gca().set_yscale('symlog')
+
+    plt.savefig(filename)
+    if view:
+        plt.show()
+
+    plt.close()
+
 
 def plot_spikes(spikes, view=False, filename=None, title=None):
     """ Plots the trains for a single spiking neuron. """
