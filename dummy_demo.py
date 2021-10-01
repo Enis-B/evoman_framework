@@ -32,7 +32,7 @@ if not os.path.exists(experiment_name):
 n_hidden_neurons = 10
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[3],
+                  enemies=[2],
                   playermode="ai",
                   player_controller = player_controller(n_hidden_neurons),
                   randomini='yes',
@@ -229,6 +229,7 @@ def run(config_file):
         '''
 
         visualize.draw_net(config, winner, True)
+
         visualize.plot_stats(stats, ylog=False, view=True)
         visualize.plot_species(stats, view=True)
 
@@ -265,7 +266,7 @@ def run(config_file):
             mean_gain_list.append(mean_gain)
 
             # add mean_gains to file for later stat. test
-            with open('mean_gains_ea1_enemy3', 'wb') as fp:
+            with open('mean_gains_ea1_enemy1', 'wb') as fp:
                 pickle.dump(mean_gain_list, fp)
             #with open ('mean_gains_ea1_enemy1', 'rb') as fp:
             #    itemlist = pickle.load(fp)
