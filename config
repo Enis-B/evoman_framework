@@ -11,17 +11,8 @@ config['NEAT'] = {'fitness_criterion': 'max',
 config['DefaultGenome'] = {
                 'activation_default': 'sigmoid',
 
-                # try multiple possbile activations
-
-                # ---
-
-                # 'activation_options': 'sigmoid',
-                # 'activation_mutate_rate': 0.0,
-
                 'activation_options': 'sigmoid relu tanh',
                 'activation_mutate_rate': 0.1,
-
-                # ---
                   
                 'aggregation_default': 'sum',
                 'aggregation_mutate_rate ': 0.0,
@@ -41,7 +32,6 @@ config['DefaultGenome'] = {
                 'enabled_default'  : True,
                 'enabled_mutate_rate' : 0.01,
 
-                # think these have to be 0 to keep net architecture?
                 # 'node_add_prob' : 0.2,
                 # 'node_delete_prob': 0.2,
                 'node_add_prob' : 0.0,

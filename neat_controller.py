@@ -1,9 +1,3 @@
-# the demo_controller file contains standard controller structures for the agents.
-# you can overwrite the method 'control' in your own instance of the environment
-# and then use a different type of controller if you wish.
-# note that the param 'controller' received by 'control' is provided through environment.play(pcont=x)
-# 'controller' could contain either weights to be used in the standard controller (or other controller implemented),
-# or even a full network structure (ex.: from NEAT).
 from evoman.controller import Controller
 import numpy as np
 
@@ -12,7 +6,7 @@ def sigmoid_activation(x):
 	return 1./(1.+np.exp(-x))
 
 
-# implements controller structure for player
+# implements controller structure for player using a NEAT Network
 class player_controller(Controller):
 	def __init__(self, _n_hidden):
 		# Number of hidden neurons
@@ -25,7 +19,7 @@ class player_controller(Controller):
 		# Controller is a neat network that transforms inputs to outputs
 		output = controller.activate(inputs)
 
-		# takes decisions about sprite actions
+		# takes decisions about sprite actions based on network output
 		if output[0] > 0.5:
 			left = 1
 		else:
@@ -55,6 +49,7 @@ class player_controller(Controller):
 
 
 # implements controller structure for enemy
+# is not really used as enemy mode should be static for experiment
 class enemy_controller(Controller):
 	def __init__(self, _n_hidden):
 		# Number of hidden neurons
