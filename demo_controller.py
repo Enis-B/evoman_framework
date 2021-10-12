@@ -26,23 +26,23 @@ class player_controller(Controller):
 			# Preparing the weights and biases from the controller of layer 1
 
 			# Biases for the n hidden neurons
-			bias1 = controller[:self.n_hidden[0]].reshape(1,self.n_hidden[0])
+			bias1 = np.array(controller[:self.n_hidden[0]]).reshape(1,self.n_hidden[0])
 			# Weights for the connections from the inputs to the hidden nodes
 			weights1_slice = len(inputs)*self.n_hidden[0] + self.n_hidden[0]
-			weights1 = controller[self.n_hidden[0]:weights1_slice].reshape((len(inputs),self.n_hidden[0]))
+			weights1 = np.array(controller[self.n_hidden[0]:weights1_slice]).reshape((len(inputs),self.n_hidden[0]))
 
 			# Outputs activation first layer.
 			output1 = sigmoid_activation(inputs.dot(weights1) + bias1)
 
 			# Preparing the weights and biases from the controller of layer 2
-			bias2 = controller[weights1_slice:weights1_slice + 5].reshape(1,5)
-			weights2 = controller[weights1_slice + 5:].reshape((self.n_hidden[0],5))
+			bias2 = np.array(controller[weights1_slice:weights1_slice + 5]).reshape(1,5)
+			weights2 = np.array(controller[weights1_slice + 5:]).reshape((self.n_hidden[0],5))
 
 			# Outputting activated second layer. Each entry in the output is an action
 			output = sigmoid_activation(output1.dot(weights2)+ bias2)[0]
 		else:
-			bias = controller[:5].reshape(1, 5)
-			weights = controller[5:].reshape((len(inputs), 5))
+			bias = np.array(controller[:5]).reshape(1, 5)
+			weights = np.array(controller[5:]).reshape((len(inputs), 5))
 
 			output = sigmoid_activation(inputs.dot(weights) + bias)[0]
 

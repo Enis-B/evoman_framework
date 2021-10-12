@@ -17,6 +17,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import time
 
 # imports framework
 import sys, os
@@ -30,16 +31,18 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = 'dummy_demo'
+experiment_name = 'dummy_neat_0'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
 n_hidden_neurons = 10
 
+
 env = Environment(experiment_name=experiment_name,
-                  enemies=[2],
+                  enemies=[7,8],
                   playermode="ai",
                   player_controller = player_controller(n_hidden_neurons),
+                  multiplemode="yes",
                   randomini='yes',
                   enemymode="static",
                   level=2,
@@ -73,10 +76,11 @@ def eval_p(genome, config):
     return simulation(env,net)
 
 # parallel gain function
-def eval_winner(winner, config):
+def eval_winner(winner, config, env):
     # This function will run in parallel:
     # only evaluates a single genome and returns the fitness
     net = neat.nn.FeedForwardNetwork.create(winner, config)
+
     return simulation_for_gain(env,net)
 
 def run(config_file):
@@ -96,7 +100,7 @@ def run(config_file):
         p.add_reporter(neat.StdOutReporter(True))
         stats = neat.StatisticsReporter()
         p.add_reporter(stats)
-        
+
         # Run for up to x generations in parallel.
         pe = neat.ParallelEvaluator(4, eval_p)
         winner = p.run(pe.evaluate, 20)
@@ -112,6 +116,13 @@ def run(config_file):
     elif run_mode == "test":
         mean_gain_list = []
         for i in range(10):
+
+            experiment_name = 'dummy_neat' +"_"+ str(i+1)
+            if not os.path.exists(experiment_name):
+                os.makedirs(experiment_name)
+
+            env.state_to_log() # checks environment state
+            ini = time.time()  # sets time marker
             # Load configuration.
             config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                  neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -126,25 +137,64 @@ def run(config_file):
             p.add_reporter(stats)
 
             # Run for up to x generations in parallel.
-            pe = neat.ParallelEvaluator(4, eval_p)
-            winner = p.run(pe.evaluate, 50)
+            pe = neat.ParallelEvaluator(3, eval_p)
+            winner = p.run(pe.evaluate, 10)
 
             # Display the winning genome.
-            print('\nWinner genome:\n{!s}'.format(winner))
+            #print('\nWinner genome:\n{!s}'.format(winner))
             real_winner = stats.best_genome()
-
             # Display the winning genome according to gain.
             print('\nBest genome:\n{!s}'.format(real_winner))
-            winner_gain = 0
-            for cnt in range(5):
-                p,e = eval_winner(real_winner,config)
-                winner_gain = winner_gain + (p - e)
 
-            mean_gain = winner_gain/5
-            mean_gain_list.append(mean_gain)
+            ## Get winner weights
+            winner_genome_weights = real_winner.connections.values()
+            winner_genome_nodes = real_winner.nodes.values()
+
+            winner_weights = []
+            for ele in winner_genome_nodes:
+                if ele.key >= 5:
+                    winner_weights.append(ele.bias)
+            for ele in winner_genome_weights:
+                if ele.key[1] >= 5:
+                    winner_weights.append(ele.weight)
+            for ele in winner_genome_nodes:
+                if ele.key < 5:
+                    winner_weights.append(ele.bias)
+            for ele in winner_genome_weights:
+                if ele.key[1] < 5:
+                    winner_weights.append(ele.weight)
+
+            ## Add weights to file
+            print("\n Best genome weights: \n",winner_weights)
+            a_file = open(str(int(real_winner.fitness))+"_"+str(i)+".txt", "w")
+            np.savetxt(a_file, np.array(winner_weights))
+            a_file.close()
+
+            winner_gain = 0
+            for opponent in range(1,9):
+                experiment_name = "dummy_neat"+"_"+str(i)+"/all_enemies"+str(opponent)+"/"
+                if not os.path.exists(experiment_name):
+                    os.makedirs(experiment_name)
+                env_single = Environment(experiment_name=experiment_name,
+                                         enemies=[opponent],
+                                         playermode="ai",
+                                         player_controller = player_controller(n_hidden_neurons),
+                                         randomini='yes',
+                                         enemymode="static",
+                                         level=2,
+                                         speed="fastest",
+                                         logs='on',
+                                         savelogs='yes'
+                                         )
+                for cnt in range(5):
+                    p,e = eval_winner(real_winner,config,env_single)
+                    winner_gain = winner_gain + (p - e)
+
+                mean_gain = winner_gain/5
+                mean_gain_list.append(mean_gain)
 
             # add mean_gains to file for later stat. test
-            with open('mean_gains_task1/mean_gains_ea1_enemy1', 'wb') as fp:
+            with open('mean_gains_ea1_enemy7,8', 'wb') as fp:
                 pickle.dump(mean_gain_list, fp)
             #with open ('mean_gains_ea1_enemy1', 'rb') as fp:
             #    itemlist = pickle.load(fp)
@@ -163,13 +213,16 @@ def run(config_file):
                 avg_avg_fitness = avg_fitness.tolist()
                 avg_stdev_fitness = stdev_fitness.tolist()
 
+            env.state_to_log() # checks environment state
+            fim = time.time() # prints execution time
+            print( '\nExecution time: '+str(round((fim-ini)/60))+' minutes \n')
+
 
         avg_best = [number / 10 for number in avg_best]
         avg_avg_fitness = [number / 10 for number in avg_avg_fitness]
         avg_stdev_fitness = [number / 10 for number in avg_stdev_fitness]
-
         # visualisation
-        visualize.plot_stats_avg(avg_best,avg_avg_fitness,avg_stdev_fitness,50, ylog=False, view=True)
+        visualize.plot_stats_avg(avg_best,avg_avg_fitness,avg_stdev_fitness,10, ylog=False, view=True)
         fig = plt.figure(figsize =(10, 7))
         plt.title("Boxplot of mean gains")
         plt.xlabel('EA')
@@ -184,6 +237,10 @@ if __name__ == '__main__':
     # here so that the script will run successfully regardless of the
     # current working directory.
     local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, 'config_file')
+    config_path = os.path.join(local_dir, 'config_file_2')
+    ini_total = time.time()  # sets time marker
     run(config_path)
+    fim_total = time.time() # prints total execution time
+    print( '\nTotal Execution time: '+str(round((fim_total-ini_total)/60))+' minutes \n')
+
 

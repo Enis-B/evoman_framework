@@ -13,21 +13,21 @@ import scipy
 from scipy import stats
 import pylab
 
-with open ('mean_gains_ea1_enemy1', 'rb') as fp:
+with open ('mean_gains_task1/mean_gains_ea1_enemy1', 'rb') as fp:
     ea1_enemy1 = pickle.load(fp)
-with open ('mean_gains_ea1_enemy2', 'rb') as fp:
+with open ('mean_gains_task1/mean_gains_ea1_enemy2', 'rb') as fp:
     ea1_enemy2 = pickle.load(fp)
-with open ('mean_gains_ea1_enemy3', 'rb') as fp:
+with open ('mean_gains_task1/mean_gains_ea1_enemy3', 'rb') as fp:
     ea1_enemy3 = pickle.load(fp)
-with open ('mean_gains_ea2_enemy1', 'rb') as fp:
+with open ('mean_gains_task1/mean_gains_ea2_enemy1', 'rb') as fp:
     ea2_enemy1 = pickle.load(fp)
-with open ('mean_gains_ea2_enemy2', 'rb') as fp:
+with open ('mean_gains_task1/mean_gains_ea2_enemy2', 'rb') as fp:
     ea2_enemy2 = pickle.load(fp)
-with open ('mean_gains_ea2_enemy3', 'rb') as fp:
+with open ('mean_gains_task1/mean_gains_ea2_enemy3', 'rb') as fp:
     ea2_enemy3 = pickle.load(fp)
-with open ('mean_gains_ea3_enemy1', 'rb') as fp:
+with open ('mean_gains_task1/mean_gains_ea3_enemy1', 'rb') as fp:
     ea3_enemy1 = pickle.load(fp)
-with open ('mean_gains_ea3_enemy2', 'rb') as fp:
+with open ('mean_gains_task1/mean_gains_ea3_enemy2', 'rb') as fp:
     ea3_enemy2 = pickle.load(fp)
 
 stats.probplot(ea1_enemy1, dist="norm", plot=pylab)
