@@ -29,7 +29,7 @@ if not os.path.exists(experiment_name):
 n_hidden_neurons = 10
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[7,8],
+                  enemies=[7,8], # (1,5)
                   playermode="ai",
                   player_controller = player_controller(n_hidden_neurons),
                   multiplemode="yes",
@@ -201,7 +201,7 @@ elif run_mode == 'test':
         avg=log.select('avg')
         std=log.select('std')
         ## single run plot
-        gens = 39
+        gens = 40
         visualize.plot_stats_deap(best,avg,std,gens)
 
         if i > 0:
@@ -224,7 +224,7 @@ elif run_mode == 'test':
     fim_total = time.time() # prints execution time
     print( '\nExecution time: '+str(round((fim_total-ini_total)/60))+' minutes \n')
 
-    gens = 39
+    gens = 40
     # visualisation
     visualize.plot_stats_deap(avg_best,avg_avg_fitness,avg_stdev_fitness,gens, ylog=False, view=True)
     fig = plt.figure(figsize =(10, 7))
