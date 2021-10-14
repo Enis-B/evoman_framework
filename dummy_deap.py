@@ -1,6 +1,5 @@
 from __future__ import print_function
 import neat
-import visualize
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,7 +28,7 @@ if not os.path.exists(experiment_name):
 n_hidden_neurons = 10
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[7,8], # (1,5)
+                  enemies=[2,4,6], # (1,5) (2,6)
                   playermode="ai",
                   player_controller = player_controller(n_hidden_neurons),
                   multiplemode="yes",
@@ -41,8 +40,6 @@ env = Environment(experiment_name=experiment_name,
 # default environment fitness is assumed for experiment
 
 env.state_to_log() # checks environment state
-
-ini = time.time()  # sets time marker
 
 # number of weights for multilayer with 10 hidden neurons. (265)
 n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
@@ -67,9 +64,12 @@ def evaluate(x):
 def eval_best(x,env):
     return sim_for_gain(env,x)
 
+## RUN MODE
+run_mode = 'train'
 
-run_mode = 'test'
 if run_mode == 'train':
+    mean_gain_list = []
+    ini = time.time()  # sets time marker
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
 
@@ -89,7 +89,7 @@ if run_mode == 'train':
     toolbox.register("evaluate", evaluate)
 
 
-    pop = toolbox.population(n=10)
+    pop = toolbox.population(n=100)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
@@ -97,7 +97,7 @@ if run_mode == 'train':
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=9,
+    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=199,
                                    stats=stats, halloffame=hof, verbose=True)
 
 
@@ -107,17 +107,64 @@ if run_mode == 'train':
     env.state_to_log() # checks environment state
 
     print('\nLog\n',log,'\n',log.select('avg'))
-    print('\nPop\n',pop,len(pop))
-    print('\nHoF\n',hof,len(hof[0]))
+    #print('\nPop\n',pop,len(pop))
+    #print('\nHoF\n',hof,len(hof[0]))
     print('\nHof fitness\n',hof[-1].fitness.values[0])
-    
 
-    gens = 10
+    winner_gain = 0
+    for opponent in range(1,9):
+        experiment_name = "dummy_deap"+"_0"+"/all_enemies"+str(opponent)+"/"
+        if not os.path.exists(experiment_name):
+            os.makedirs(experiment_name)
+        env_single = Environment(experiment_name=experiment_name,
+                                 enemies=[opponent],
+                                 playermode="ai",
+                                 player_controller = player_controller(n_hidden_neurons),
+                                 randomini='yes',
+                                 enemymode="static",
+                                 level=2,
+                                 speed="fastest",
+                                 logs='on',
+                                 savelogs='yes'
+                                 )
+        for cnt in range(5):
+            p,e = eval_best(hof[0],env_single)
+            winner_gain = winner_gain + (p - e)
+
+        mean_gain = winner_gain/5
+        mean_gain_list.append(mean_gain)
+
+    # add mean_gains to file for later stat. test
+    with open('mean_gains_ea2_enemy2,4,6', 'wb') as fp:
+        pickle.dump(mean_gain_list, fp)
+    #with open ('mean_gains_ea1_enemy1', 'rb') as fp:
+    #    itemlist = pickle.load(fp)
+
+    #print('\nLog\n',log,'\n',log.select('avg')) ## average fitness each gen
+    #print('\nPop\n',pop,'\n',len(pop)) ## final population
+    print('\nHoF\n',hof,'\n',len(hof[0])) ## best genome seen
+
+    a_file = open(str(int(hof[-1].fitness.values[0]))+"_"+".txt", "w")
+    np.savetxt(a_file, np.array(hof[0]))
+    a_file.close()
+
+    fig = plt.figure(figsize =(10, 7))
+    plt.title("Boxplot of mean gains")
+    plt.xlabel('EA')
+    plt.ylabel('mean of gains across 5 runs for each experiment')
+    plt.boxplot(np.array(mean_gain_list))
+    plt.savefig('boxplot_gain_train.png', bbox_inches='tight')
+    plt.show()
+
+    gens = 200
     best=log.select('max')
     avg=log.select('avg')
     std=log.select('std')
 
-    visualize.plot_stats_deap(best,avg,std,gens)
+    best_std = np.std(np.array(best))
+    avg_std = np.std(np.array(avg))
+
+    visualize.plot_stats_deap_avg(best,avg,std,gens,best_std,avg_std,ylog=False, view=True)
 
 elif run_mode == 'test':
     ini_total = time.time()  # sets time marker
@@ -183,7 +230,7 @@ elif run_mode == 'test':
             mean_gain_list.append(mean_gain)
 
         # add mean_gains to file for later stat. test
-        with open('mean_gains_ea2_enemy7,8', 'wb') as fp:
+        with open('mean_gains_ea2_enemy1,3,4', 'wb') as fp:
             pickle.dump(mean_gain_list, fp)
         #with open ('mean_gains_ea1_enemy1', 'rb') as fp:
         #    itemlist = pickle.load(fp)
@@ -221,12 +268,15 @@ elif run_mode == 'test':
     avg_avg_fitness = [number / 10 for number in avg_avg_fitness]
     avg_stdev_fitness = [number / 10 for number in avg_stdev_fitness]
 
+    best_std = np.std(np.array(avg_best))
+    avg_std = np.std(np.array(avg_avg_fitness))
+
     fim_total = time.time() # prints execution time
     print( '\nExecution time: '+str(round((fim_total-ini_total)/60))+' minutes \n')
 
     gens = 40
     # visualisation
-    visualize.plot_stats_deap(avg_best,avg_avg_fitness,avg_stdev_fitness,gens, ylog=False, view=True)
+    visualize.plot_stats_deap_avg(avg_best,avg_avg_fitness,avg_stdev_fitness,gens,best_std,avg_std,ylog=False, view=True)
     fig = plt.figure(figsize =(10, 7))
     plt.title("Boxplot of mean gains")
     plt.xlabel('EA')

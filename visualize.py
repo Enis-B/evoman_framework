@@ -40,7 +40,38 @@ def plot_stats(statistics, ylog=False, view=False, filename='avg_fitness.svg'):
 
     plt.close()
 
-def plot_stats_avg(avg_best,avg_avg_fitness,avg_stdev,gens, ylog=False, view=False, filename='avg_avg_fitness.svg'):
+def plot_stats(statistics, ylog=False, view=False, filename='avg_fitness.svg'):
+    """ Plots the population's average and best fitness. """
+    if plt is None:
+        warnings.warn("This display is not available due to a missing optional dependency (matplotlib)")
+        return
+
+    generation = range(len(statistics.most_fit_genomes))
+    best_fitness = [c.fitness for c in statistics.most_fit_genomes]
+    avg_fitness = np.array(statistics.get_fitness_mean())
+    stdev_fitness = np.array(statistics.get_fitness_stdev())
+
+    plt.plot(generation, avg_fitness, 'b-', label="average")
+    plt.plot(generation, avg_fitness - stdev_fitness, 'g-.', label="-1 sd")
+    plt.plot(generation, avg_fitness + stdev_fitness, 'g-.', label="+1 sd")
+    plt.plot(generation, best_fitness, 'r-', label="best")
+
+    plt.title("Population's average and best fitness")
+    plt.xlabel("Generations")
+    plt.ylabel("Fitness")
+    plt.grid()
+    plt.legend(loc="best")
+    if ylog:
+        plt.gca().set_yscale('symlog')
+
+    plt.savefig(filename)
+    if view:
+        plt.show()
+
+    plt.close()
+
+
+def plot_stats_avg(avg_best,avg_avg_fitness,avg_stdev,gens,ylog=False, view=False, filename='avg_avg_fitness.svg'):
     """ Plots the population's average and best fitness. """
     if plt is None:
         warnings.warn("This display is not available due to a missing optional dependency (matplotlib)")
@@ -49,6 +80,34 @@ def plot_stats_avg(avg_best,avg_avg_fitness,avg_stdev,gens, ylog=False, view=Fal
     plt.plot(np.array(range(gens)), np.array(avg_avg_fitness), 'b-', label="average")
     plt.plot(np.array(range(gens)), np.array(avg_avg_fitness) - np.array(avg_stdev), 'g-.', label="-1 sd")
     plt.plot(np.array(range(gens)), np.array(avg_avg_fitness) + np.array(avg_stdev), 'g-.', label="+1 sd")
+    plt.plot(np.array(range(gens)), np.array(avg_best), 'r-', label="best")
+
+    plt.title("Mean of population's average and best fitness across experiments")
+    plt.xlabel("Generations")
+    plt.ylabel("Fitness")
+    plt.grid()
+    plt.legend(loc="best")
+    if ylog:
+        plt.gca().set_yscale('symlog')
+    plt.savefig(filename)
+    if view:
+        plt.show()
+    plt.close()
+
+def plot_stats_avg_avg(avg_best,avg_avg_fitness,avg_stdev,gens,best_std,avg_std, ylog=False, view=False, filename='avg_avg_fitness.svg'):
+    """ Plots the population's average and best fitness. """
+    if plt is None:
+        warnings.warn("This display is not available due to a missing optional dependency (matplotlib)")
+        return
+
+    plt.plot(np.array(range(gens)), np.array(avg_avg_fitness), 'b-', label="average")
+
+    plt.plot(np.array(range(gens)), np.array(avg_avg_fitness) - np.array(avg_std), 'm-.', label="-1 sd mean")
+    plt.plot(np.array(range(gens)), np.array(avg_avg_fitness) + np.array(avg_std), 'm-.', label="+1 sd mean")
+
+    plt.plot(np.array(range(gens)), np.array(avg_best) - np.array(best_std), 'g-.', label="-1 sd max")
+    plt.plot(np.array(range(gens)), np.array(avg_best) + np.array(best_std), 'g-.', label="+1 sd max")
+
     plt.plot(np.array(range(gens)), np.array(avg_best), 'r-', label="best")
 
     plt.title("Mean of population's average and best fitness across experiments")
@@ -77,6 +136,42 @@ def plot_stats_deap(best,avg,std,gens, ylog=False, view=False, filename='avg_fit
     plt.plot(generation, avg_fitness, 'b-', label="average")
     plt.plot(generation, avg_fitness - stdev_fitness, 'g-.', label="-1 sd")
     plt.plot(generation, avg_fitness + stdev_fitness, 'g-.', label="+1 sd")
+    plt.plot(generation, best_fitness, 'r-', label="best")
+
+    plt.title("Population's average and best fitness")
+    plt.xlabel("Generations")
+    plt.ylabel("Fitness")
+    plt.grid()
+    plt.legend(loc="best")
+    if ylog:
+        plt.gca().set_yscale('symlog')
+    plt.savefig(filename)
+    if view:
+        plt.show()
+    plt.close()
+
+def plot_stats_deap_avg(best,avg,std,gens,best_std,avg_std, ylog=False, view=False, filename='avg_fitness.svg'):
+    """ Plots the population's average and best fitness. """
+    if plt is None:
+        warnings.warn("This display is not available due to a missing optional dependency (matplotlib)")
+        return
+
+    generation = range(gens)
+    best_fitness = np.array(best)
+    avg_fitness = np.array(avg)
+    stdev_fitness = np.array(std)
+
+    plt.plot(generation, avg_fitness, 'b-', label="average")
+
+    #plt.plot(generation, avg_fitness - stdev_fitness, 'g-.', label="-1 sd")
+    #plt.plot(generation, avg_fitness + stdev_fitness, 'g-.', label="+1 sd")
+
+    plt.plot(generation, avg_fitness - avg_std, 'g-.', label="-1 sd mean")
+    plt.plot(generation, avg_fitness + avg_std, 'g-.', label="+1 sd mean")
+
+    plt.plot(generation, best_fitness - best_std, 'm-.', label="-1 sd max")
+    plt.plot(generation, best_fitness + best_std, 'm-.', label="+1 sd max")
+
     plt.plot(generation, best_fitness, 'r-', label="best")
 
     plt.title("Population's average and best fitness")

@@ -109,9 +109,17 @@ def run(config_file):
         print('\nBest genome:\n{!s}'.format(winner))
 
         visualize.draw_net(config, winner, True)
-
-        visualize.plot_stats(stats, ylog=False, view=True)
+        #visualize.plot_stats(stats, ylog=False, view=True)
         visualize.plot_species(stats, view=True)
+
+        best_fitness = [c.fitness for c in stats.most_fit_genomes]
+        avg_fitness = np.array(stats.get_fitness_mean())
+        stdev_fitness = np.array(stats.get_fitness_stdev())
+
+        avg_std = np.std(avg_fitness)
+        best_std = np.array(np.std(best_fitness))
+        gens = 20
+        visualize.plot_stats_avg_avg(best_fitness,avg_fitness,stdev_fitness,gens,best_std,avg_std,ylog=False,view=True)
 
     elif run_mode == "test":
         mean_gain_list = []
@@ -221,8 +229,12 @@ def run(config_file):
         avg_best = [number / 10 for number in avg_best]
         avg_avg_fitness = [number / 10 for number in avg_avg_fitness]
         avg_stdev_fitness = [number / 10 for number in avg_stdev_fitness]
+
+        avg_std = np.std(avg_avg_fitness)
+        best_std = np.array(np.std(avg_best))
+        gens = 10
         # visualisation
-        visualize.plot_stats_avg(avg_best,avg_avg_fitness,avg_stdev_fitness,10, ylog=False, view=True)
+        visualize.plot_stats_avg_avg(avg_best,avg_avg_fitness,avg_stdev_fitness,gens,best_std,avg_std,ylog=False, view=True)
         fig = plt.figure(figsize =(10, 7))
         plt.title("Boxplot of mean gains")
         plt.xlabel('EA')
