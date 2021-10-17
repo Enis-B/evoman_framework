@@ -1,0 +1,13 @@
+
+
+MESSAGE: Pygame initialized for simulation.
+
+RUN: run status: enemy: 8; fitness: 88.98322890233345; player life: 46.0000000000003; enemy life: 0; time: 275
+
+RUN: run status: enemy: 8; fitness: 90.08661051127251; player life: 56.20000000000032; enemy life: 0; time: 253
+
+RUN: run status: enemy: 8; fitness: 90.08661051127251; player life: 56.20000000000032; enemy life: 0; time: 253
+
+RUN: run status: enemy: 8; fitness: 88.98322890233345; player life: 46.0000000000003; enemy life: 0; time: 275
+
+RUN: run status: enemy: 8; fitness: 86.03858578874555; player life: 20.200000000000237; enemy life: 0; time: 396
