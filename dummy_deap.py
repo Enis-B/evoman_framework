@@ -1,15 +1,3 @@
-'''
-################################
-# EvoMan FrameWork - V1.0 2016 #
-# Author: Karine Miras         #
-# karine.smiras@gmail.com      #
-################################
-This file is inspired by  the dummy_demo.py provided
-with the EvoMan framework, as well as the various
-examples given on the DEAP documentation page
-https://github.com/karinemiras/evoman_framework
-https://deap.readthedocs.io/en/master/
-'''
 from __future__ import print_function
 import neat
 import random
@@ -40,7 +28,7 @@ if not os.path.exists(experiment_name):
 n_hidden_neurons = 10
 
 env = Environment(experiment_name=experiment_name,
-                  enemies=[2,4,6], # (1,5) (2,6)
+                  enemies=[2,5,6], # (1,5) (2,6) (4,6,7)
                   playermode="ai",
                   player_controller = player_controller(n_hidden_neurons),
                   multiplemode="yes",
@@ -50,8 +38,6 @@ env = Environment(experiment_name=experiment_name,
                   speed="fastest")
 
 # default environment fitness is assumed for experiment
-
-env.state_to_log() # checks environment state
 
 # number of weights for multilayer with 10 hidden neurons. (265)
 n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
@@ -77,22 +63,19 @@ def eval_best(x,env):
     return sim_for_gain(env,x)
 
 ## RUN MODE
-# train does a single run for experimenting purposes
-# test does 10 runs and creates figures for report
-run_mode = 'train'
+run_mode = 'test'
 
 if run_mode == 'train':
+    print("Run Mode: ",run_mode)
+    env.state_to_log() # checks environment state
     mean_gain_list = []
     ini = time.time()  # sets time marker
-
-    # fitness maximization class
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
 
     #N_vars
     IND_SIZE=n_vars
 
-    # initialization
     toolbox = base.Toolbox()
     toolbox.register("attr_float", random.random)
     toolbox.register("individual", tools.initRepeat, creator.Individual,
@@ -100,9 +83,8 @@ if run_mode == 'train':
 
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-    # operators and evaulation function
     toolbox.register("mate", tools.cxTwoPoint)
-    toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
+    toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1) #0.1
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("evaluate", evaluate)
 
@@ -115,8 +97,7 @@ if run_mode == 'train':
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    # DEAP EA algorithm
-    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=199,
+    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=499,
                                    stats=stats, halloffame=hof, verbose=True)
 
 
@@ -126,6 +107,8 @@ if run_mode == 'train':
     env.state_to_log() # checks environment state
 
     print('\nLog\n',log,'\n',log.select('avg'))
+    #print('\nPop\n',pop,len(pop))
+    #print('\nHoF\n',hof,len(hof[0]))
     print('\nHof fitness\n',hof[-1].fitness.values[0])
 
     winner_gain = 0
@@ -152,7 +135,7 @@ if run_mode == 'train':
         mean_gain_list.append(mean_gain)
 
     # add mean_gains to file for later stat. test
-    with open('mean_gains_ea2_enemy2,4,6', 'wb') as fp:
+    with open('test_deap_task2/enemy2,5,6_deap_0,5xover_0.1indpb_3tournsize_experiment/mean_gains_ea2_enemy2,5,6', 'wb') as fp:
         pickle.dump(mean_gain_list, fp)
     #with open ('mean_gains_ea1_enemy1', 'rb') as fp:
     #    itemlist = pickle.load(fp)
@@ -173,7 +156,7 @@ if run_mode == 'train':
     plt.savefig('boxplot_gain_train.png', bbox_inches='tight')
     plt.show()
 
-    gens = 200
+    gens = 500
     best=log.select('max')
     avg=log.select('avg')
     std=log.select('std')
@@ -184,6 +167,7 @@ if run_mode == 'train':
     visualize.plot_stats_deap_avg(best,avg,std,gens,best_std,avg_std,ylog=False, view=True)
 
 elif run_mode == 'test':
+    print("Run Mode: ",run_mode)
     ini_total = time.time()  # sets time marker
     mean_gain_list = []
     for i in range(10):
@@ -193,14 +177,12 @@ elif run_mode == 'test':
         env.state_to_log() # checks environment state
         ini = time.time()  # sets time marker
 
-        # fitness maximization class
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
         creator.create("Individual", list, fitness=creator.FitnessMax)
 
         #N_vars
         IND_SIZE=n_vars
 
-        # initialization
         toolbox = base.Toolbox()
         toolbox.register("attr_float", random.random)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
@@ -208,11 +190,10 @@ elif run_mode == 'test':
 
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-
-        # operators and evaulation function
+        ## Operators
         toolbox.register("mate", tools.cxTwoPoint)
-        toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
-        toolbox.register("select", tools.selTournament, tournsize=3)
+        toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1) #0.05
+        toolbox.register("select", tools.selTournament,tournsize=3) #5
         toolbox.register("evaluate", evaluate)
 
 
@@ -224,8 +205,7 @@ elif run_mode == 'test':
         stats.register("min", np.min)
         stats.register("max", np.max)
 
-        # DEAP EA algorithm
-        pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=39,
+        pop, log = algorithms.eaSimple(pop, toolbox, cxpb=1.0, mutpb=0.2, ngen=39, #0.5 , 0.2
                                        stats=stats, halloffame=hof, verbose=True)
 
         winner_gain = 0
@@ -252,7 +232,7 @@ elif run_mode == 'test':
             mean_gain_list.append(mean_gain)
 
         # add mean_gains to file for later stat. test
-        with open('mean_gains_ea2_enemy1,3,4', 'wb') as fp:
+        with open('deap_256/mean_gains_ea2_enemy2,5,6', 'wb') as fp:
             pickle.dump(mean_gain_list, fp)
         #with open ('mean_gains_ea1_enemy1', 'rb') as fp:
         #    itemlist = pickle.load(fp)

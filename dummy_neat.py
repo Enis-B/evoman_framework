@@ -86,7 +86,7 @@ def eval_winner(winner, config, env):
 def run(config_file):
     run_mode = "test"
     if run_mode == "train":
-
+        print("Run Mode: ",run_mode)
         # Load configuration.
         config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                              neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -122,6 +122,7 @@ def run(config_file):
         visualize.plot_stats_avg_avg(best_fitness,avg_fitness,stdev_fitness,gens,best_std,avg_std,ylog=False,view=True)
 
     elif run_mode == "test":
+        print("Run Mode: ",run_mode)
         mean_gain_list = []
         for i in range(10):
 
@@ -146,7 +147,11 @@ def run(config_file):
 
             # Run for up to x generations in parallel.
             pe = neat.ParallelEvaluator(3, eval_p)
-            winner = p.run(pe.evaluate, 10)
+            winner = p.run(pe.evaluate, 40)
+
+            ## Operators: selection based on stagnation, elitism and survival threshold of species,
+            ## if species has 1 member (clone as is, only mutate)
+            ## uniform crossover, gaussian mutation
 
             # Display the winning genome.
             #print('\nWinner genome:\n{!s}'.format(winner))
@@ -232,7 +237,7 @@ def run(config_file):
 
         avg_std = np.std(avg_avg_fitness)
         best_std = np.array(np.std(avg_best))
-        gens = 10
+        gens = 40
         # visualisation
         visualize.plot_stats_avg_avg(avg_best,avg_avg_fitness,avg_stdev_fitness,gens,best_std,avg_std,ylog=False, view=True)
         fig = plt.figure(figsize =(10, 7))

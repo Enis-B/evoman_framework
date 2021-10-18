@@ -144,7 +144,7 @@ def run(config_file):
             mean_gain_list.append(mean_gain)
 
             # add mean_gains to file for later stat. test
-            with open('mean_gains_task1/mean_gains_ea1_enemy1', 'wb') as fp:
+            with open('task_1/mean_gains_task1/mean_gains_ea1_enemy1', 'wb') as fp:
                 pickle.dump(mean_gain_list, fp)
             #with open ('mean_gains_ea1_enemy1', 'rb') as fp:
             #    itemlist = pickle.load(fp)
