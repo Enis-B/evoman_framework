@@ -1,3 +1,15 @@
+'''
+################################
+# EvoMan FrameWork - V1.0 2016 #
+# Author: Karine Miras         #
+# karine.smiras@gmail.com      #
+################################
+This file is inspired by  the dummy_demo.py provided
+with the EvoMan framework, as well as the various
+examples given on the DEAP documentation page
+https://github.com/karinemiras/evoman_framework
+https://deap.readthedocs.io/en/master/
+'''
 from __future__ import print_function
 import neat
 import random
@@ -65,17 +77,22 @@ def eval_best(x,env):
     return sim_for_gain(env,x)
 
 ## RUN MODE
+# train does a single run for experimenting purposes
+# test does 10 runs and creates figures for report
 run_mode = 'train'
 
 if run_mode == 'train':
     mean_gain_list = []
     ini = time.time()  # sets time marker
+
+    # fitness maximization class
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
 
     #N_vars
     IND_SIZE=n_vars
 
+    # initialization
     toolbox = base.Toolbox()
     toolbox.register("attr_float", random.random)
     toolbox.register("individual", tools.initRepeat, creator.Individual,
@@ -83,6 +100,7 @@ if run_mode == 'train':
 
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
+    # operators and evaulation function
     toolbox.register("mate", tools.cxTwoPoint)
     toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
     toolbox.register("select", tools.selTournament, tournsize=3)
@@ -97,6 +115,7 @@ if run_mode == 'train':
     stats.register("min", np.min)
     stats.register("max", np.max)
 
+    # DEAP EA algorithm
     pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=199,
                                    stats=stats, halloffame=hof, verbose=True)
 
@@ -107,8 +126,6 @@ if run_mode == 'train':
     env.state_to_log() # checks environment state
 
     print('\nLog\n',log,'\n',log.select('avg'))
-    #print('\nPop\n',pop,len(pop))
-    #print('\nHoF\n',hof,len(hof[0]))
     print('\nHof fitness\n',hof[-1].fitness.values[0])
 
     winner_gain = 0
@@ -176,12 +193,14 @@ elif run_mode == 'test':
         env.state_to_log() # checks environment state
         ini = time.time()  # sets time marker
 
+        # fitness maximization class
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
         creator.create("Individual", list, fitness=creator.FitnessMax)
 
         #N_vars
         IND_SIZE=n_vars
 
+        # initialization
         toolbox = base.Toolbox()
         toolbox.register("attr_float", random.random)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
@@ -189,6 +208,8 @@ elif run_mode == 'test':
 
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
+
+        # operators and evaulation function
         toolbox.register("mate", tools.cxTwoPoint)
         toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
         toolbox.register("select", tools.selTournament, tournsize=3)
@@ -203,6 +224,7 @@ elif run_mode == 'test':
         stats.register("min", np.min)
         stats.register("max", np.max)
 
+        # DEAP EA algorithm
         pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=39,
                                        stats=stats, halloffame=hof, verbose=True)
 
