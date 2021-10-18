@@ -19,7 +19,7 @@ with open ('dummy_gains/mean_gains_deap_enemy2,5,6', 'rb') as fp:
     ea1_enemy2 = pickle.load(fp)
 with open ('dummy_gains/mean_gains_neat_enemy7,8', 'rb') as fp:
     ea2_enemy1 = pickle.load(fp)
-with open ('dummy_gains/mean_gains_deap_enemy2,5,6', 'rb') as fp:
+with open ('dummy_gains/mean_gains_neat_enemy2,5,6', 'rb') as fp:
     ea2_enemy2 = pickle.load(fp)
 
 
